@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Chart from '#lib/Chart.svelte';
 	import Performance from '#lib/Performance.svelte';
+	import Insights from '#lib/Insights.svelte';
 	import Churn from '#lib/Churn.svelte';
 	import { health, money, integer, num, type Row } from '#lib/data.js';
 	import {
@@ -274,20 +275,5 @@
 		</div>
 	</article>
 {:else if mode === 'relatorios'}
-	<div class="report-intro">
-		<span class="eyebrow">ANÁLISE COM PROPÓSITO</span>
-		<h2>Transforme descobertas<br />em cuidado com a carteira.</h2>
-		<p>Esta área está preparada para receber seus insights e propostas de melhoria.</p>
-		<span class="draft-tag">Conteúdo editorial · em preparação</span>
-	</div>
-	<div class="report-grid">
-		{#each [{ n: '01', title: 'Principais insights', text: 'Espaço para apresentar de três a cinco descobertas, suas evidências e o impacto nas decisões do gestor.' }, { n: '02', title: 'Melhorias no acompanhamento', text: 'Espaço para suas recomendações de cadência, ações de CS e critérios de escalonamento.' }, { n: '03', title: 'Processo e recomendações', text: 'Espaço para documentar o tratamento dos dados, as limitações da análise e os próximos passos.' }] as card}<article
-				class="panel report-card"
-			>
-				<span class="report-number">{card.n}</span>
-				<h2>{card.title}</h2>
-				<p>{card.text}</p>
-				<span class="draft-tag">Aguardando seu conteúdo</span>
-			</article>{/each}
-	</div>
+	<Insights {data} />
 {/if}

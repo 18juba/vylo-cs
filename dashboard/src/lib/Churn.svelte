@@ -122,7 +122,7 @@
 
 <style>
 	.churn-chart {
-		height: 260px;
+		height: 190px;
 		padding: 8px 22px 10px;
 	}
 	.churn-details {
