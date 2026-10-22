@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Chart from '#lib/Chart.svelte';
+	import PriorityMethod from '#lib/PriorityMethod.svelte';
 	import Performance from '#lib/Performance.svelte';
 	import Insights from '#lib/Insights.svelte';
 	import Churn from '#lib/Churn.svelte';
@@ -137,26 +138,8 @@
 {/if}
 {#if mode === 'dashboard'}<Performance {sellers} {sales} />{/if}
 {#if mode === 'risco'}
-	{#if mode === 'risco'}<div class="risk-banner">
-			<ShieldAlert size={28} />
-			<div>
-				<h2>{attention} sellers merecem uma conversa mais próxima.</h2>
-				<p>
-					Priorização por sinais observáveis. O indicador não representa uma probabilidade de
-					cancelamento.
-				</p>
-			</div>
-		</div>
-		<details class="method">
-			<summary>Como a prioridade é calculada?</summary>
-			<p>
-				Queda de faturamento ≥ 20% sobre o último mês anterior disponível: 35 pontos; reputação
-				laranja/vermelha: 25; reclamações ≥ 3%: 20; algum atendimento não resolvido no mês: 10;
-				alguma nota de satisfação ≤ 2 no mês: 10. Alta: ≥ 50; moderada: 20–49; baixa: &lt; 20. Sem
-				vendas no mês: sem dados. Cancelamentos até o mês selecionado são excluídos. Ausência não
-				vira zero no cálculo de variação. Regras iniciais para validação pelo time.
-			</p>
-		</details>{/if}
+	{#if mode === 'risco'}
+		<PriorityMethod />{/if}
 	<article class="panel table-panel">
 		<div class="panel-heading">
 			<div>
@@ -188,9 +171,7 @@
 					>{#each list as item}<tr
 							><td
 								><div class="seller-cell">
-									<span class="seller-avatar"
-										>{item.seller.nome_loja.slice(0, 2).toUpperCase()}</span
-									>
+									
 									<div>
 										<strong>{item.seller.nome_loja}</strong><small>{item.seller.seller_id}</small>
 									</div>
