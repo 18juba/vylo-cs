@@ -20,7 +20,7 @@
 	let {
 		data,
 		mode = 'dashboard'
-	}: { data: { sellers: Row[]; sales: Row[]; calls: Row[] }; mode?: string } = $props();
+	}: { data: { sellers: Row[]; sales: Row[]; calls: Row[]; logs?: Row[]; logsAvailable?: boolean }; mode?: string } = $props();
 	let month = $state('');
 	let owner = $state('Todos');
 	let query = $state('');
@@ -87,8 +87,10 @@
 		)
 	);
 	const raw = $derived(
-		tab === 'vendedores' ? data.sellers : tab === 'vendas_mensais' ? data.sales : data.calls
+		tab === 'log_tratamento' ? data.logs ?? [] : tab === 'vendedores' ? data.sellers : tab === 'vendas_mensais' ? data.sales : data.calls
 	);
+	const logLabels: Record<string,string> = {arquivo:'Arquivo',linha_original:'Linha original',campo:'Campo',antes:'Antes',depois:'Depois',motivo:'Tratamento / motivo'};
+	const columns = $derived(tab === 'log_tratamento' ? Object.keys(logLabels) : Object.keys(raw[0] ?? {}));
 	const filtered = $derived(
 		raw.filter((r) => Object.values(r).some((v) => v.toLowerCase().includes(query.toLowerCase())))
 	);
@@ -208,18 +210,19 @@
 {:else if mode === 'dados'}
 	<article class="panel">
 		<div class="data-tabs">
-			{#each ['vendedores', 'vendas_mensais', 'atendimentos'] as name}<button
+			{#each ['vendedores', 'vendas_mensais', 'atendimentos', 'log_tratamento'] as name}<button
 					class:chosen={tab === name}
 					onclick={() => {
 						tab = name;
 						currentPage = 1;
 						query = '';
-					}}>{name.replace('_', ' ')}</button
+					}}>{name === 'log_tratamento' ? 'Log de tratamento' : name.replace('_', ' ')}</button
 				>{/each}
 		</div>
 		<div class="panel-heading">
 			<div>
-				<h2>{tab}.csv</h2>
+				<h2>{tab === 'log_tratamento' ? 'Log de tratamento' : tab + '.csv'}</h2>
+				{#if tab === 'log_tratamento'}<p>Rastreie o arquivo, a linha original, o valor antes e depois e o motivo da alteração. Valores vazios aparecem como —; remoções e pendências são identificadas no motivo.</p>{/if}
 				<p>{filtered.length} registros encontrados de {raw.length}</p>
 			</div>
 			<label class="search"
@@ -229,20 +232,20 @@
 					bind:value={query}
 					oninput={() => (currentPage = 1)}
 				/></label
-			><a class="button secondary" href={'/dados/' + tab + '.csv'} download
+			><a class="button secondary" aria-disabled={tab === 'log_tratamento' && !data.logsAvailable} href={'/dados/' + tab + '.csv'} download
 				>Baixar CSV <ArrowUpRight size={15} /></a
 			>
 		</div>
 		<div class="table-scroll">
-			<table>
+			<table class:log-table={tab === 'log_tratamento'}>
 				<thead
 					><tr
-						>{#each Object.keys(raw[0] ?? {}) as key}<th>{key}</th>{/each}</tr
+						>{#each columns as key}<th scope="col">{tab === 'log_tratamento' ? logLabels[key] : key}</th>{/each}</tr
 					></thead
 				><tbody
 					>{#each filtered.slice((safePage - 1) * 15, safePage * 15) as row}<tr
-							>{#each Object.values(row) as value}<td>{value || '—'}</td>{/each}</tr
-						>{:else}<tr><td class="empty">Nenhum registro encontrado.</td></tr>{/each}</tbody
+							>{#each columns as key}<td>{row[key] || '—'}</td>{/each}</tr
+						>{:else}<tr><td colspan={columns.length || 1} class="empty">{tab === 'log_tratamento' && !data.logsAvailable ? 'Log indisponível. Adicione log_tratamento.csv em static/dados.' : 'Nenhum registro encontrado.'}</td></tr>{/each}</tbody
 				>
 			</table>
 		</div>
@@ -258,3 +261,7 @@
 {:else if mode === 'relatorios'}
 	<Insights {data} />
 {/if}
+
+<style>
+ .log-table td{white-space:pre-wrap;overflow-wrap:anywhere;min-width:120px;max-width:340px;vertical-align:top}.log-table th{white-space:nowrap}.data-tabs{flex-wrap:wrap}.button[aria-disabled="true"]{pointer-events:none;opacity:.5}
+</style>
