@@ -1,9 +1,9 @@
 <section class="panel improvement" aria-labelledby="improvement-title">
- <header><h2 id="improvement-title">Proposta: acompanhamento proativo</h2><span>Piloto de 90 dias</span></header>
+ <header><h2 id="improvement-title">Proposta: acompanhamento proativo</h2></header>
  <div class="proposal-grid">
   <section><h3>Problema</h3><p>Cancelamentos recentes em alta, perdas concentradas no Essencial e respostas mais lentas antes da saída.</p></section>
   <section><h3>Ação</h3><p>Revisar semanalmente sellers Essencial com sinais de atenção. Definir responsável, ação e prazo de retorno para cada conta.</p></section>
-  <section><h3>Como medir</h3><p>Acompanhar churn mensal, tempo de resposta e ações no prazo. Comparar o piloto com uma carteira semelhante ao longo de 90 dias.</p></section>
+  <section><h3>Como medir</h3><p>Acompanhar churn mensal, tempo de resposta e ações no prazo.</p></section>
  </div>
 </section>
 <style>
