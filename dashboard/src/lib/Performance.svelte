@@ -1,8 +1,11 @@
 <script lang="ts">
 	import Chart from '#lib/Chart.svelte';
+ import { planColors } from '#lib/colors.js';
+	import Frequencies from '#lib/Frequencies.svelte';
 	import { money, integer, num, type Row } from '#lib/data.js';
-	let { sellers, sales }: { sellers: Row[]; sales: Row[] } = $props();
-	let metric = $state('revenue');
+	let { sellers, sales, calls }: { sellers: Row[]; sales: Row[]; calls: Row[] } = $props();
+	let marketMetric = $state('revenue');
+	let planMetric = $state('revenue');
 	const plans = ['Essencial', 'Pro', 'Premium'];
 	const colors: Record<string, string> = {
 		Amazon: '#FF9900',
@@ -63,54 +66,51 @@
 			}))
 		)
 	);
-	function metricValue(row: ReturnType<typeof summarize>) {
+	function metricValue(row: ReturnType<typeof summarize>, metric: string) {
 		return row[metric as 'revenue' | 'orders' | 'perSeller' | 'ticket'];
 	}
 	const displayMoney = (n: number | null) => (n === null ? 'Sem dados' : money(n));
 </script>
 
 <section class="performance-section" aria-label="Desempenho por marketplace e plano">
-	<div class="performance-heading">
-		<div><p>Todo o histórico · todos os responsáveis · incluindo sellers cancelados</p></div>
-		<label
-			>Indicador dos gráficos <select bind:value={metric}
-				>{#each Object.entries(metrics) as [value, label]}<option {value}>{label}</option
-					>{/each}</select
-			></label
-		>
-	</div>
-	<div class="charts-grid">
+	<Frequencies {sellers} {sales} {calls}>
+{#snippet children()}
 		<article class="panel">
 			<div class="panel-heading">
 				<div>
 					<h2>Desempenho por marketplace</h2>
-					<p>{metrics[metric]}</p>
+					<select class="chart-metric" aria-label="Indicador de desempenho por marketplace" bind:value={marketMetric}>{#each Object.entries(metrics) as [value,label]}<option {value}>{label}</option>{/each}</select>
 				</div>
 			</div>
 			<Chart
 				kind="bar"
-				title={metrics[metric] + ' por marketplace'}
+				title={metrics[marketMetric] + ' por marketplace'}
 				labels={byMarket.map((r) => r.label)}
-				values={byMarket.map(metricValue)}
+				values={byMarket.map(row => metricValue(row, marketMetric))}
 				colors={byMarket.map((r) => colors[r.label] ?? '#8559ee')}
+				height={240}
 			/>
 		</article>
+{/snippet}
+{#snippet donuts()}
 		<article class="panel">
 			<div class="panel-heading">
 				<div>
 					<h2>Desempenho por plano</h2>
-					<p>{metrics[metric]}</p>
+					<select class="chart-metric" aria-label="Indicador de desempenho por plano" bind:value={planMetric}>{#each Object.entries(metrics) as [value,label]}<option {value}>{label}</option>{/each}</select>
 				</div>
 			</div>
 			<Chart
-				kind="bar"
-				title={metrics[metric] + ' por plano'}
+				kind="doughnut"
+				title={metrics[planMetric] + ' por plano'}
 				labels={byPlan.map((r) => r.label)}
-				values={byPlan.map(metricValue)}
-				colors={['#35c5d6', '#8559ee', '#be77dc']}
+				values={byPlan.map(row => metricValue(row, planMetric))}
+				colors={byPlan.map(r => planColors[r.label] ?? '#8559ee')}
+				height={170}
 			/>
 		</article>
-	</div>
+{/snippet}
+	</Frequencies>
 	<article class="panel">
 		<div class="panel-heading">
 			<h2>Resultados por marketplace × plano</h2>
@@ -156,46 +156,5 @@
 </section>
 
 <style>
-	.performance-section {
-		margin-bottom: 26px;
-	}
-	.performance-heading {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		gap: 20px;
-		margin: 16px 0 12px;
-	}
-	.performance-heading label {
-		display: flex;
-		flex-direction: column;
-		gap: 7px;
-		color: #8c859b;
-		font-size: 10px;
-	}
-	.market-marker {
-		display: inline-block;
-		width: 8px;
-		height: 8px;
-		border-radius: 50%;
-		margin-right: 8px;
-	}
-	.performance-notes {
-		padding: 14px 24px;
-	}
-	.performance-notes p {
-		font-size: 12px;
-		color: #675773;
-		max-width: 950px;
-	}
-	@media (max-width: 700px) {
-		.performance-heading {
-			align-items: start;
-			flex-direction: column;
-		}
-		.performance-heading label,
-		.performance-heading select {
-			width: 100%;
-		}
-	}
+ .performance-section{margin-bottom:26px}.chart-metric{display:block;width:100%;max-width:260px;margin-top:9px;padding:6px 28px 6px 10px;border:1px solid #dfd3f0;border-radius:7px;background-color:#f8f4ff;color:#65418e;font-size:11px;line-height:1.4;cursor:pointer;transition:border-color .15s,box-shadow .15s}.chart-metric:hover{border-color:#a780d7}.chart-metric:focus-visible{outline:2px solid #8559ee;outline-offset:2px}.market-marker{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px}.performance-notes{padding:14px 24px}.performance-notes p{font-size:12px;color:#675773;max-width:950px}
 </style>

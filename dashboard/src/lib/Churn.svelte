@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Chart from 'chart.js/auto';
+ import {tooltipStyle,hoverGuide,lineGradient} from '#lib/chartStyle.js';
 	import type { Row } from '#lib/data.js';
 	import { monthlyChurn } from '#lib/churn.js';
 	let { sellers, months }: { sellers: Row[]; months: string[] } = $props();
@@ -24,6 +25,7 @@
 		const points = rows;
 		const chart = new Chart(canvas, {
 			type: 'line',
+ plugins: [hoverGuide],
 			data: {
 				labels: points.map((r) => monthLabel(r.month)),
 				datasets: [
@@ -31,10 +33,10 @@
 						label: 'Churn mensal',
 						data: points.map((r) => r.rate),
 						borderColor: '#8559ee',
-						backgroundColor: '#8559ee18',
+						backgroundColor: (context: {chart: Chart}) => lineGradient(context.chart),
 						fill: true,
-						tension: 0,
-						pointRadius: 4,
+						tension: .35, cubicInterpolationMode: 'monotone', borderCapStyle: 'round', borderJoinStyle: 'round', pointHitRadius: 16, pointBackgroundColor: '#ffffff', pointBorderColor: '#8559ee', pointBorderWidth: 2, pointHoverBackgroundColor: '#8559ee', pointHoverBorderColor: '#ffffff', pointHoverBorderWidth: 3,
+						pointRadius: 2,
 						pointHoverRadius: 6,
 						borderWidth: 3,
 						spanGaps: false
@@ -42,32 +44,35 @@
 				]
 			},
 			options: {
-				responsive: true,
+				responsive: true, animation: {duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 350},
 				maintainAspectRatio: false,
 				interaction: { mode: 'index', intersect: false },
 				plugins: {
 					legend: { display: false },
-					tooltip: {
+					tooltip: { ...tooltipStyle,
 						callbacks: {
 							label: (context) => `Churn: ${percentage(points[context.dataIndex].rate)}`,
 							afterLabel: (context) => {
 								const r = points[context.dataIndex];
-								return [`Cancelamentos: ${r.cancellations}`, `Carteira inicial: ${r.initial}`];
+								const prev = points[context.dataIndex - 1];
+ const lines = [`Cancelamentos: ${r.cancellations}`, `Carteira inicial: ${r.initial}`];
+ if(r.rate !== null && prev?.rate !== null && prev?.rate !== undefined) lines.push(`Variação mensal: ${(r.rate-prev.rate).toLocaleString('pt-BR',{maximumFractionDigits:1,signDisplay:'exceptZero'})} p.p.`);
+ return lines;
 							}
 						}
 					}
 				},
 				scales: {
-					x: { grid: { display: false }, ticks: { color: '#675773' } },
+					x: { border:{display:false}, grid: { display: false, drawTicks:false }, ticks: { color: '#8d8499',font:{size:11},padding:10 } },
 					y: {
-						beginAtZero: true,
+						beginAtZero: true, border:{display:false},
 						suggestedMax: 1,
-						title: { display: true, text: 'Churn (%)', color: '#675773' },
+						title: { display: false, text: 'Churn (%)' },
 						ticks: {
-							color: '#675773',
+							color: '#8d8499', font:{size:10}, maxTicksLimit:5, padding:8,
 							callback: (value) => Number(value).toLocaleString('pt-BR') + '%'
 						},
-						grid: { color: '#eee9f4' }
+						grid: { color: '#6650800b', drawTicks:false }
 					}
 				}
 			}
@@ -113,11 +118,6 @@
 			</table>
 		</div>
 	</details>
-	<p id="churn-method" class="churn-notes">
-		Carteira inicial é a quantidade de sellers ativos no início de cada mês. O churn mensal mostra qual porcentagem dessa carteira
-		cancelou durante o mês (cancelamentos ÷ carteira inicial × 100). Sellers que entraram no próprio
-		mês ficam fora desse cálculo.
-	</p>
 </article>
 
 <style>

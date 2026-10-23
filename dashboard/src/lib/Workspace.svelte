@@ -2,7 +2,6 @@
 	import Chart from '#lib/Chart.svelte';
 	import PriorityMethod from '#lib/PriorityMethod.svelte';
 	import Performance from '#lib/Performance.svelte';
-	import Frequencies from '#lib/Frequencies.svelte';
 	import Insights from '#lib/Insights.svelte';
 	import Churn from '#lib/Churn.svelte';
 	import { health, money, integer, num, type Row } from '#lib/data.js';
@@ -157,7 +156,7 @@
 		<Churn {sellers} {months} />
 	</div>
 {/if}
-{#if mode === 'dashboard'}<Performance {sellers} {sales} /><Frequencies {sellers} calls={data.calls} />{/if}
+{#if mode === 'dashboard'}<Performance {sellers} {sales} calls={data.calls} />{/if}
 {#if mode === 'risco'}
 	{#if mode === 'risco'}
 		<PriorityMethod />{/if}
